@@ -132,3 +132,11 @@ Não excluímos automaticamente arquivos ou evidências. A retenção é uma pol
 Erro de variável ausente: preencha `.env` na raiz. Erro CSRF/origem: abra a origem definida em `WEB_ORIGIN` e autentique novamente. Upload rejeitado: confirme MIME, integridade, tamanho, número de páginas e ausência de criptografia/conteúdo ativo. Job falhou: valide storage/banco, aguarde a próxima elegibilidade ou use recuperação na tela. Bucket não privado: altere acesso pelo Console Neon antes de iniciar; ACLs não são modificadas pela aplicação. Porta ocupada: ajuste `PORT`, `API_URL` e `WEB_ORIGIN` de forma consistente.
 
 Consulte [arquitetura](docs/architecture.md), [banco](docs/database.md), [API](docs/api.md), [segurança](docs/security.md), [PDFs](docs/pdf.md), [assinatura](docs/signing.md), [auditoria/conferência](docs/audit.md) e [preparação de hospedagem](docs/deployment.md).
+
+Se você já se cadastrou como funcionário e ainda não há administrador, habilite explicitamente sua conta pela CLI, sem alterar a senha:
+
+```bash
+npm run admin:promote -- --login seu.login
+```
+
+Esse comando exige acesso local ao ambiente do backend, só funciona quando não existe administrador, registra auditoria e revoga sessões anteriores. Entre novamente para carregar o perfil administrativo. Não há autopromoção pelo cadastro público.

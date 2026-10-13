@@ -34,3 +34,9 @@ A verificação posterior confirmou 25 tabelas do SignFlow em `public`, as 9 tab
 ## Cadastro com login e senha mínima de 9 caracteres
 
 Foram adicionados testes para rejeitar senhas de 8 caracteres, cadastrar com 9 caracteres, autenticar por login normalizado, rejeitar login duplicado e tentativas de definir perfil/permissões, e trocar senha revogando sessões. A suíte de regras/integração passou a 26 testes. O build passou incluindo a nova rota estática `/cadastro`; lint e typecheck também passaram. O cenário de navegador cobre criação da conta e login sem e-mail.
+
+## Edição de configurações e administrador inicial
+
+A conta existente estava como funcionário e não havia administrador. Após autorização explícita do usuário, a CLI `admin:promote` habilitou a conta como administrador, preservando a senha, revogando sessões anteriores e registrando `users.initial_admin_promoted` na auditoria. A tela agora explica a restrição para perfis sem acesso; frontend e backend exigem perfil administrador e permissão `settings.write`.
+
+28 testes de regras/integração passaram. Os 8 testes de navegador passaram, incluindo edição, persistência após recarregar e bloqueio de escrita por funcionário. Os testes usam o ambiente descartável; nenhuma configuração fictícia foi salva na produção.

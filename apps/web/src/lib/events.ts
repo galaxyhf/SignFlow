@@ -1,4 +1,5 @@
 const labels: Record<string, string> = {
+  "users.initial_admin_promoted": "Primeiro administrador habilitado",
   "auth.registered": "Conta cadastrada",
   "auth.login": "Acesso realizado",
   "auth.login_failed": "Tentativa de acesso recusada",

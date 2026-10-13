@@ -377,3 +377,68 @@ test("cadastro com nome, login e senha de 9 caracteres permite entrar sem e-mail
       .getByText("Funcionário cadastrado", { exact: true }),
   ).toBeVisible();
 });
+
+test("administrador edita configurações e funcionário recebe explicação de somente leitura", async ({
+  page,
+  browser,
+}) => {
+  await login(page);
+  await page.getByRole("link", { name: "Configurações", exact: true }).click();
+  const company = page.getByLabel("Nome da empresa", { exact: true });
+  await expect(company).toBeEnabled();
+  await company.fill("Empresa de teste configurada");
+  await page
+    .getByRole("button", { name: "Salvar configurações", exact: true })
+    .click();
+  await expect(
+    page.getByText("Configurações salvas", { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(company).toHaveValue("Empresa de teste configurada");
+  const ctx = await browser.newContext(),
+    employee = await ctx.newPage();
+  const username = "settings-" + randomUUID().slice(0, 8);
+  await employee.goto("/cadastro");
+  await employee
+    .getByLabel("Nome", { exact: true })
+    .fill("Funcionário de configurações");
+  await employee.getByLabel("Login", { exact: true }).fill(username);
+  await employee.getByLabel("Senha", { exact: true }).fill("123456789");
+  await employee
+    .getByRole("button", { name: "Criar cadastro", exact: true })
+    .click();
+  await employee.getByRole("link", { name: "Ir para o login" }).click();
+  await employee.getByLabel("Login", { exact: true }).fill(username);
+  await employee.getByLabel("Senha", { exact: true }).fill("123456789");
+  await employee.getByRole("button", { name: "Entrar", exact: true }).click();
+  await expect(
+    employee.getByRole("heading", { name: "Visão geral" }),
+  ).toBeVisible();
+  await employee
+    .getByRole("link", { name: "Configurações", exact: true })
+    .click();
+  await expect(
+    employee.getByLabel("Nome da empresa", { exact: true }),
+  ).toBeDisabled();
+  await expect(
+    employee.getByText(/Apenas administradores podem editar/),
+  ).toBeVisible();
+  await expect(
+    employee.getByRole("button", { name: "Salvar configurações", exact: true }),
+  ).toHaveCount(0);
+  const status = await employee.evaluate(async () => {
+    const csrf = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("sf_csrf="))!
+      .split("=")[1];
+    return (
+      await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
+        body: "{}",
+      })
+    ).status;
+  });
+  expect(status).toBe(403);
+  await ctx.close();
+});

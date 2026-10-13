@@ -245,6 +245,15 @@ export function SettingsPage({ user }: { user: Actor }) {
         title="Configurações"
         text="Empresa, documentos e controles de acesso."
       />
+      {!(
+        user.role === "admin" && user.permissions.includes("settings.write")
+      ) && (
+        <div className="notice" role="status">
+          Você está no perfil {roleLabels[user.role as Role] || user.role}.
+          Apenas administradores podem editar as configurações da empresa. Sua
+          senha pode ser alterada abaixo.
+        </div>
+      )}
       <ErrorBox error={data.error} />
       {data.isPending ? (
         <Loading />
@@ -252,7 +261,10 @@ export function SettingsPage({ user }: { user: Actor }) {
         data.data && (
           <SettingsForm
             settings={data.data}
-            editable={user.permissions.includes("settings.write")}
+            editable={
+              user.role === "admin" &&
+              user.permissions.includes("settings.write")
+            }
           />
         )
       )}

@@ -10,6 +10,7 @@ import { Database, Queryable } from "../src/database/database";
 import { ObjectStorage } from "../src/modules/storage/storage.service";
 import { AuditService } from "../src/modules/audit/audit.service";
 import { SettingsService } from "../src/modules/settings/settings.service";
+import { promoteInitialAdmin } from "../src/modules/auth/promote-admin.cli";
 import { AuthService } from "../src/modules/auth/auth.service";
 import { ClientsService } from "../src/modules/clients/clients.service";
 import { FilesService } from "../src/modules/documents/files.service";
@@ -642,5 +643,45 @@ describe("Cadastro público e senha mínima de 9 caracteres", () => {
         )
       ).user.role,
     ).toBe("employee");
+  });
+});
+
+describe("Provisionamento administrativo e edição de configurações", () => {
+  it("não promove contas quando já existe um administrador", async () => {
+    await expect(promoteInitialAdmin(db, audit, "conta.nova")).rejects.toThrow(
+      "Já existe administrador",
+    );
+  });
+  it("promove conta existente, revoga sessões e libera configuração com auditoria", async () => {
+    const session = await auth.login(
+      { login: "conta.nova", password: "987654321" },
+      "promote-login",
+    );
+    await db.query("UPDATE user_roles SET role='employee' WHERE user_id=$1", [
+      admin,
+    ]);
+    await promoteInitialAdmin(db, audit, "conta.nova");
+    await expect(auth.authenticate(session.sessionToken)).rejects.toThrow();
+    const actor = await auth.actor(db, session.user.id);
+    expect(actor.role).toBe("admin");
+    expect(actor.permissions).toContain("settings.write");
+    const current = await settings.get();
+    await settings.save(
+      { ...current, companyName: "Empresa configurada" },
+      actor.id,
+    );
+    expect((await settings.get()).companyName).toBe("Empresa configurada");
+    const event = (
+      await db.query(
+        "SELECT data FROM audit_events WHERE aggregate_id=$1 AND action='users.initial_admin_promoted'",
+        [actor.id],
+      )
+    ).rows[0];
+    expect(event.data).toMatchObject({
+      from: "employee",
+      to: "admin",
+      source: "operator-cli",
+    });
+    expect((await audit.verify(db)).valid).toBe(true);
   });
 });

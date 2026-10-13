@@ -23,7 +23,8 @@
     "dev:e2e": "concurrently -k \"NODE_ENV=test WEB_ORIGIN=http://127.0.0.1:3100 EVIDENCE_SECRET=ephemeral-e2e-evidence-secret-32-characters JOB_SECRET=ephemeral-e2e-job-secret-32-characters tsx --tsconfig apps/api/tsconfig.json scripts/e2e-server.ts\" \"E2E=true API_URL=http://127.0.0.1:3101 npm run dev -w @signflow/web -- --port 3100\"",
     "format": "prettier --write apps/api/src apps/api/test apps/web/src packages/shared/src scripts tests *.ts *.mjs *.json docs README.md",
     "test:browser:install": "PLAYWRIGHT_BROWSERS_PATH=/tmp/signflow-browsers playwright install chromium",
-    "postinstall": "node scripts/pdf-assets.mjs"
+    "postinstall": "node scripts/pdf-assets.mjs",
+    "admin:promote": "npm run admin:promote -w @signflow/api --"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.10",
