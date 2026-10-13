@@ -1,6 +1,6 @@
 # API REST
 
-Base local: `http://127.0.0.1:3001`; navegador: `/api` via proxy Next. OpenAPI autenticado em `/api/openapi`. Corpos JSON validados por Zod estão em `packages/shared/src/index.ts`; erros são `{message,status}`. Não são registrados payloads, cookies ou URLs públicas contendo token.
+Base local: `http://localhost:3001`; navegador: `/api` via proxy Next. OpenAPI autenticado em `/api/openapi`. Corpos JSON validados por Zod estão em `packages/shared/src/index.ts`; erros são `{message,status}`. Não são registrados payloads, cookies ou URLs públicas contendo token.
 
 | Grupo              | Operações                                                                                                                           |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |

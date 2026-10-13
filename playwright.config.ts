@@ -5,14 +5,14 @@ export default defineConfig({
   fullyParallel: false,
   timeout: 60000,
   use: {
-    baseURL: "http://127.0.0.1:3100",
+    baseURL: "http://localhost:3100",
     headless: true,
     trace: "off",
     screenshot: "only-on-failure",
   },
   webServer: {
     command: "npm run dev:e2e",
-    url: "http://127.0.0.1:3100",
+    url: "http://localhost:3100",
     reuseExistingServer: false,
     timeout: 60000,
   },

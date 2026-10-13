@@ -74,7 +74,7 @@ export async function createApp() {
 }
 if (require.main === module)
   createApp()
-    .then((app) => app.listen(configEnv.port, "127.0.0.1"))
+    .then((app) => app.listen(configEnv.port, "localhost"))
     .catch((e) => {
       console.error(e instanceof Error ? e.message : "Falha ao iniciar");
       process.exit(1);

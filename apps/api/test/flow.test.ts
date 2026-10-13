@@ -311,22 +311,20 @@ describe("Regras e segurança", () => {
       { login: "auditor-test", password: "Test-password-123!" },
       "auditor-ip",
     );
-    const reflector = {
-      getAllAndOverride: (key: string) =>
-        key === "permission" ? "clients.write" : false,
-    } as Reflector;
-    const guard = new AuthGuard(auth, reflector);
+    const handler = () => undefined;
+    Reflect.defineMetadata("permission", "clients.write", handler);
+    const guard = new AuthGuard(auth, new Reflector());
     const req = {
       method: "POST",
-      headers: { origin: "http://127.0.0.1:3000" },
+      headers: { origin: "http://localhost:3000" },
       ip: "auditor-ip",
       cookies: { sf_session: session.sessionToken },
       header: () => session.csrf,
     };
     const ctx = {
       switchToHttp: () => ({ getRequest: () => req }),
-      getHandler: () => null,
-      getClass: () => null,
+      getHandler: () => handler,
+      getClass: () => AuthGuard,
     } as unknown as ExecutionContext;
     await expect(guard.canActivate(ctx)).rejects.toThrow("permissão");
   });

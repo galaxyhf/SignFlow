@@ -1,10 +1,12 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { PDFDocument } from "pdf-lib";
 async function login(page: import("@playwright/test").Page) {
   const credentials = JSON.parse(
-    await readFile("/tmp/signflow-e2e-credentials.json", "utf8"),
+    await readFile(join(tmpdir(), "signflow-e2e-credentials.json"), "utf8"),
   );
   await page.goto("/login");
   await page.getByLabel("Login").fill(credentials.login);
@@ -82,10 +84,7 @@ test("funcionário cria, cliente assina e funcionário confere e recupera o PDF"
   await expect(
     page.getByRole("button", { name: "Copiar link", exact: true }),
   ).toBeVisible();
-  const link = (await page.locator(".link-box").innerText()).replace(
-    "127.0.0.1:3100",
-    "127.0.0.1:3100",
-  );
+  const link = await page.locator(".link-box").innerText();
   const requestId = page.url().split("/").pop()!;
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.getByRole("button", { name: "Copiar link", exact: true }).click();
@@ -188,7 +187,7 @@ test("verificação pública expõe somente informações mínimas e tema funcio
     ),
   ).toBe(true);
   await page.screenshot({
-    path: "/tmp/signflow-verification-mobile.png",
+    path: join(tmpdir(), "signflow-verification-mobile.png"),
     fullPage: true,
   });
 });
@@ -229,7 +228,10 @@ test("editor normaliza arraste e redimensionamento em documento multipágina", a
     .selectOption("1");
   await page.getByRole("button", { name: "Texto", exact: true }).click();
   expect(await page.locator(".pdf-field").count()).toBe(1);
-  await page.screenshot({ path: "/tmp/signflow-editor.png", fullPage: true });
+  await page.screenshot({
+    path: join(tmpdir(), "signflow-editor.png"),
+    fullPage: true,
+  });
 });
 
 test("administrador cadastra auditor e API bloqueia escrita desse perfil", async ({

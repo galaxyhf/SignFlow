@@ -1,5 +1,4 @@
-import { ApiBody } from "@nestjs/swagger";
-import type { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
+import { ApiBody, type SchemaObject } from "@nestjs/swagger";
 import { z } from "zod";
 export function ApiInput(schema: z.ZodType) {
   return ApiBody({

@@ -27,11 +27,13 @@ As versões instaladas e as licenças estão em [docs/versions.md](docs/versions
 Node.js 24 LTS, npm 11, projeto Neon com PostgreSQL e Object Storage habilitado em região suportada, bucket **private**. A aplicação utiliza Argon2 nativo; em plataformas sem binário pré-compilado pode ser necessária uma toolchain de compilação.
 
 ```bash
-npm install
-cp .env.example .env
+npm ci
+# Copie .env.example para .env na raiz (no Windows, use copy ou o explorador).
 ```
 
 Preencha as variáveis antes de iniciar. O arquivo `.env` fica na raiz e não deve ser versionado. A aplicação está configurada para a branch `production` (`br-patient-salad-b824a7kv`) do projeto `ancient-wildflower-69128465`, com o bucket privado `uploads`. As migrations foram testadas em desenvolvimento e depois aplicadas em production. Não foram copiados cadastros fictícios. Credenciais não aparecem na documentação.
+
+Em outra máquina, clone o repositório e execute `npm ci` com Node.js 24 e npm 11. Não copie `node_modules` entre sistemas: dependências nativas como Argon2 precisam corresponder ao sistema e à arquitetura. Configure o `.env` local com as credenciais autorizadas; banco e arquivos continuam no Neon e exigem conexão de rede. `localhost` aponta para a própria máquina onde os processos estão rodando.
 
 ## Ambiente
 
@@ -49,7 +51,7 @@ O `.env` contém apenas **9 variáveis necessárias**:
 | `EVIDENCE_SECRET`       | Segredo independente para proteger a auditoria e as evidências |
 | `JOB_SECRET`            | Segredo independente para autorizar chamadas de jobs           |
 
-Os padrões locais ficam no código: API na porta 3001, frontend/origem em `http://127.0.0.1:3000`, upload até 3 MB, 30 páginas e proxy não confiável. Não é necessário repeti-los no arquivo. Se precisar, as variáveis opcionais `PORT`, `API_URL`, `WEB_ORIGIN`, `MAX_UPLOAD_MB`, `MAX_PDF_PAGES` e `TRUST_PROXY` continuam disponíveis. Na hospedagem, use `NODE_ENV=production` (normalmente definido pela plataforma) e configure `API_URL`/`WEB_ORIGIN` com as URLs HTTPS. Usar a branch Neon production não altera o modo de execução local da aplicação.
+Os padrões locais ficam no código: API na porta 3001, frontend/origem em `http://localhost:3000`, upload até 3 MB, 30 páginas e proxy não confiável. Não é necessário repeti-los no arquivo. Se precisar, as variáveis opcionais `PORT`, `API_URL`, `WEB_ORIGIN`, `MAX_UPLOAD_MB`, `MAX_PDF_PAGES` e `TRUST_PROXY` continuam disponíveis. Na hospedagem, use `NODE_ENV=production` (normalmente definido pela plataforma) e configure `API_URL`/`WEB_ORIGIN` com as URLs HTTPS. Usar a branch Neon production não altera o modo de execução local da aplicação.
 
 `ADMIN_NAME`, `ADMIN_LOGIN` e `ADMIN_PASSWORD` são temporárias, usadas apenas no provisionamento do primeiro administrador; adicione-as nessa ocasião e remova depois. Não fazem parte do `.env` permanente.
 
@@ -80,7 +82,7 @@ O comando se recusa a provisionar se já houver administrador. Depois remova as 
 npm run dev
 ```
 
-Abra [SignFlow local](http://127.0.0.1:3000). Use `127.0.0.1` consistentemente: o controle de origem compara o valor exato de `WEB_ORIGIN`. A API está em `http://127.0.0.1:3001`; OpenAPI em `/api/openapi` pelo frontend, após login. Frontend e backend são processos e projetos separados; o proxy mantém os cookies no mesmo domínio do navegador.
+Abra [SignFlow local](http://localhost:3000). Use `localhost` consistentemente: o controle de origem compara o valor exato de `WEB_ORIGIN`. A API está em `http://localhost:3001`; OpenAPI em `/api/openapi` pelo frontend, após login. Frontend e backend são processos e projetos separados; o proxy mantém os cookies no mesmo domínio do navegador.
 
 Fluxo: cliente → PDF/modelo → solicitação em sete etapas → link/WhatsApp → portal → dados e desenho → PDF de revisão → aceite explícito → job → PDF final/evidências → conferência cadastral. O link é exibido apenas ao gerar e guardado na sessão do navegador do funcionário; no banco só há seu hash. Para recuperar o compartilhamento em outra sessão, gere um novo link, invalidando o anterior.
 
@@ -95,7 +97,7 @@ npm run test:e2e
 npm run build
 ```
 
-Unitários/integração usam PGlite (PostgreSQL embarcado), fixtures de PDF geradas e falhas injetadas no adaptador de armazenamento. Os testes E2E iniciam a API NestJS real em 3101 e o Next em 3100, com banco/storage descartáveis. Não há mock de endpoint nem bypass de autenticação. Não carregam cadastros fictícios no Neon. Chromium é instalado em `/tmp/signflow-browsers`; reinstale se o sistema limpar essa pasta.
+Unitários/integração usam PGlite (PostgreSQL embarcado), fixtures de PDF geradas e falhas injetadas no adaptador de armazenamento. Os testes E2E iniciam a API NestJS real em 3101 e o Next em 3100, com banco/storage descartáveis. Não há mock de endpoint nem bypass de autenticação. Não carregam cadastros fictícios no Neon. Chromium é instalado em `signflow-browsers` dentro da pasta temporária do sistema; reinstale se o sistema limpar essa pasta.
 
 Teste opcional real de conexão (usa a branch do `.env`, cria e remove um objeto temporário):
 

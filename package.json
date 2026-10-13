@@ -7,7 +7,8 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
   },
   "scripts": {
     "dev": "concurrently -k -n api,web \"npm run dev -w @signflow/api\" \"npm run dev -w @signflow/web\"",
@@ -15,14 +16,14 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint apps packages tests scripts",
     "test": "vitest run",
-    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=/tmp/signflow-browsers playwright test",
+    "test:e2e": "node scripts/run-tool.mjs browser-test",
     "db:generate": "npm run db:generate -w @signflow/api",
     "db:migrate": "npm run db:migrate -w @signflow/api",
     "admin:create": "npm run admin:create -w @signflow/api",
     "jobs:run": "npm run jobs:run -w @signflow/api",
-    "dev:e2e": "concurrently -k \"NODE_ENV=test WEB_ORIGIN=http://127.0.0.1:3100 EVIDENCE_SECRET=ephemeral-e2e-evidence-secret-32-characters JOB_SECRET=ephemeral-e2e-job-secret-32-characters tsx --tsconfig apps/api/tsconfig.json scripts/e2e-server.ts\" \"E2E=true API_URL=http://127.0.0.1:3101 npm run dev -w @signflow/web -- --port 3100\"",
+    "dev:e2e": "concurrently -k \"node scripts/run-tool.mjs e2e-api\" \"node scripts/run-tool.mjs e2e-web\"",
     "format": "prettier --write apps/api/src apps/api/test apps/web/src packages/shared/src scripts tests *.ts *.mjs *.json docs README.md",
-    "test:browser:install": "PLAYWRIGHT_BROWSERS_PATH=/tmp/signflow-browsers playwright install chromium",
+    "test:browser:install": "node scripts/run-tool.mjs browser-install",
     "postinstall": "node scripts/pdf-assets.mjs",
     "admin:promote": "npm run admin:promote -w @signflow/api --"
   },

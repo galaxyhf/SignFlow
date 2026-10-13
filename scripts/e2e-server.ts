@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import "reflect-metadata";
 import { Test } from "@nestjs/testing";
 import { PGlite } from "@electric-sql/pglite";
@@ -76,11 +78,11 @@ async function main() {
       null,
     );
   await writeFile(
-    "/tmp/signflow-e2e-credentials.json",
+    join(tmpdir(), "signflow-e2e-credentials.json"),
     JSON.stringify({ login, password }),
     { mode: 0o600 },
   );
-  await app.listen(3101, "127.0.0.1");
+  await app.listen(3101, "localhost");
   console.log(
     "API E2E pronta (PostgreSQL embarcado e storage em memória, exclusivos de teste)",
   );

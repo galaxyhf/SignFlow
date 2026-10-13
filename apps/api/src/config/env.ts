@@ -1,9 +1,9 @@
 import { config } from "dotenv";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 config({
   path: resolve(
     process.cwd(),
-    process.cwd().endsWith("/apps/api") ? "../../.env" : ".env",
+    process.cwd().endsWith(join("apps", "api")) ? "../../.env" : ".env",
   ),
   quiet: true,
 });
@@ -20,7 +20,7 @@ export function secret(name: string) {
 }
 export const configEnv = {
   port: Number(process.env.PORT || 3001),
-  origin: process.env.WEB_ORIGIN || "http://127.0.0.1:3000",
+  origin: process.env.WEB_ORIGIN || "http://localhost:3000",
   production: process.env.NODE_ENV === "production",
   maxBytes: Math.min(Number(process.env.MAX_UPLOAD_MB || 3), 3) * 1024 * 1024,
   maxPages: Number(process.env.MAX_PDF_PAGES || 30),
