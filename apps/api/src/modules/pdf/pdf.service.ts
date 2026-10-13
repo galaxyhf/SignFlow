@@ -5,6 +5,9 @@ import {
   PDFName,
   PDFArray,
   PDFObject,
+  PDFStream,
+  PDFString,
+  PDFHexString,
   PDFPage,
   degrees,
   StandardFonts,
@@ -87,7 +90,6 @@ export class PdfService {
         "Launch",
         "EmbeddedFile",
         "RichMedia",
-        "OpenAction",
         "AA",
         "XFA",
       ]);
@@ -95,26 +97,37 @@ export class PdfService {
       const inspectObject = (o: PDFObject) => {
         if (seen.has(o)) return;
         seen.add(o);
-        if (o instanceof PDFDict) {
+        if (o instanceof PDFStream) {
+          inspectObject(o.dict);
+        } else if (o instanceof PDFDict) {
           for (const [k, v] of o.entries()) {
+            // OpenAction may be a passive destination (page/zoom), not an action.
+            const value = pdf.context.lookup(v);
+            const unsafeOpenAction =
+              k.decodeText() === "OpenAction" &&
+              !(value instanceof PDFArray) &&
+              !(value instanceof PDFName) &&
+              !(value instanceof PDFString) &&
+              !(value instanceof PDFHexString);
             if (
+              unsafeOpenAction ||
               forbidden.has(k.decodeText()) ||
-              (v instanceof PDFName && forbidden.has(v.decodeText()))
+              (value instanceof PDFName && forbidden.has(value.decodeText()))
             )
               throw new BadRequestException(
                 "PDF com conteúdo ativo não permitido",
               );
-            inspectObject(v);
+            if (value) inspectObject(value);
           }
         } else if (o instanceof PDFArray) {
-          for (const v of o.asArray()) inspectObject(v);
+          for (const v of o.asArray()) {
+            const value = pdf.context.lookup(v);
+            if (value) inspectObject(value);
+          }
         }
       };
       for (const [, object] of pdf.context.enumerateIndirectObjects())
         inspectObject(object);
-      const source = Buffer.from(bytes).toString("latin1");
-      if (/\/(JavaScript|JS|Launch|EmbeddedFile|RichMedia)\b/.test(source))
-        throw new BadRequestException("PDF com conteúdo ativo não permitido");
       return { pages };
     } catch (e) {
       if (e instanceof BadRequestException) throw e;
